@@ -25,42 +25,21 @@ def auth_callback(username: str, password: str):
     
 @cl.on_chat_start
 async def start():
+    
     await cl.Avatar(
         name="You",
         path="public/favicon.png",
     ).send()
-    model = Ollama(model="sherpa")
-    
-    # Selecting system prompt based on user session and chat profile
-    user = cl.user_session.get("user")
-    chat_profile = cl.user_session.get("chat_profile")
-    
-    if user.metadata.get("role") == "admin":
-        if chat_profile == "Sherpa AI":
-            system_prompt = "You are the Sherpa AI assistant."
-        elif chat_profile == "SyntaxSherpa":
-            system_prompt = "You are SyntaxSherpa an AI coding copilot model."
-        else:
-           
-            system_prompt = "You are the Sherpa AI assistant."
-    else:
-        system_prompt = "You are the Sherpa AI assistant."
-    
+    model = Ollama(model="llama3")
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", system_prompt),
+            ("system", "You're a very knowledgeable AI Model which provides accurate and eloquent answers to all questions."),
             MessagesPlaceholder(variable_name="history"),
             ("human", "{question}"),
         ]
     )
     runnable = lambda chat_history: prompt | model | StrOutputParser()
     cl.user_session.set("runnable", runnable)
-    
-    # Set the chat profile based on user role
-    if user.metadata.get("role") == "admin":
-        cl.user_session.set("chat_profile", "SyntaxSherpa")
-    else:
-        cl.user_session.set("chat_profile", "Sherpa AI")
 
 
 @cl.on_message
@@ -81,19 +60,3 @@ async def on_message(message: cl.Message):
     # Update chat history in user session
     chat_history.append({"role": "user", "content": message.content})
     cl.user_session.set("chat_history", chat_history)
-
-# Define chat profiles
-@cl.set_chat_profiles
-async def chat_profile():
-    return [
-        cl.ChatProfile(
-            name="Sherpa AI",
-            markdown_description="AI assistant",
-            # icon="https://example.com/sherpa_ai_icon.png",
-        ),
-        cl.ChatProfile(
-            name="SyntaxSherpa",
-            markdown_description="Coding Copilot",
-            #icon="https://example.com/syntax_sherpa_icon.png",
-        ),
-    ]
