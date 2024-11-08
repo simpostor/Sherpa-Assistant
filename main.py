@@ -25,10 +25,10 @@ def auth_callback(username: str, password: str):
     
 @cl.on_chat_start
 async def start():
-    await cl.Avatar(
-        name="You",
-        path="public/favicon.png",
-    ).send()
+    # await cl.Avatar(
+    #     name="You",
+    #     path="public/favicon.png",
+    # ).send()
     model = Ollama(model="sherpa")
     
     # Selecting system prompt based on user session and chat profile
